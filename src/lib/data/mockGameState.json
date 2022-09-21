@@ -1,0 +1,38 @@
+{
+  "history": {
+    "you": [
+      ["F", "P"],
+      ["P", "W"],
+      ["W", ">"],
+      ["P", "W"],
+      ["F", "W"],
+      ["S", "W"],
+      ["S", "P"],
+      ["S", "S"]
+    ],
+    "enemy": [
+      ["S", "W"],
+      ["S", "W"],
+      ["S", "W"],
+      ["S", "W"],
+      ["S", "W"],
+      ["S", "W"],
+      ["S", "W"],
+      ["S", "W"]
+    ]
+  },
+  "stats": {
+    "you": {
+      "type": "wizard",
+      "hp": 15,
+      "enchantments": []
+    },
+    "enemy": {
+      "type": "wizard",
+      "hp": 13,
+      "enchantments": []
+    }
+  },
+  "moves": {},
+  "chat": []
+}

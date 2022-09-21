@@ -1,0 +1,3 @@
+- highlight paralyzed gesture in yellow, don't allow changes
+- change all gestures to ? for confusion
+- choose which hand to make permanent
