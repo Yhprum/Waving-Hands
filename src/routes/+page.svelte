@@ -1,101 +1,47 @@
 <script>
-  import GameHistory from "$lib/GameHistory.svelte";
-  import GameStats from "$lib/GameStats.svelte";
-  import SpellList from "$lib/SpellList.svelte";
-  import GestureButtons from "$lib/GestureButtons.svelte";
-  import GameChat from "$lib/GameChat.svelte";
-  import g from "$lib/data/mockGameState.json";
+  import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+  import { goto } from "$app/navigation";
+  import { auth } from "$lib/firebase";
+  import Challenges from "./Challenges.svelte";
 
-  let game = g;
-  let gestures = [" ", " "];
-  let spells = ["", ""];
-  let targets = ["", ""];
-  const submitMoves = () => {
-    console.log("Submit move:", { gestures, spells, targets });
-    const options = {
-      method: "POST",
-      body: JSON.stringify({ gestures, spells, targets }),
-      headers: { "Content-Type": "application/json" },
-    };
-    fetch("/game", options)
-      .then((res) => res.json())
-      .then((res) => {
-        game = res.game;
-        gestures = [" ", " "];
-        spells = Array(2);
-        targets = Array(2);
-      });
+  let user;
+  auth.onAuthStateChanged((u) => (user = u));
+
+  let username = "";
+  let password = "";
+  let error = null;
+  const login = () => {
+    signInWithEmailAndPassword(auth, username + "@yhprum.com", password)
+      .then(() => goto("/"))
+      .catch(() => (error = "failed to log in"));
+  };
+  const logout = () => {
+    signOut(auth);
   };
 </script>
 
-<div class="flex h-screen bg-zinc-800">
-  <div class="w-full flex flex-col">
-    <div class="game-history">
-      past moves
-      <div class="flex text-center">
-        <GameHistory gestures={game.history.you} />
-        <GameStats wizard="you" players={game.stats} position="text-left" />
-        <GameStats wizard="enemy" players={game.stats} position="text-right" />
-        <GameHistory gestures={game.history.enemy} />
-      </div>
-    </div>
-    <div class="game-selection">
-      <div class="game-moves flex flex-col">
-        <div class="flex">
-          <div class="text-center w-1/2  p-3">
-            <span>Left Hand</span>
-            <GestureButtons
-              bind:gesture={gestures[0]}
-              bind:spell={spells[0]}
-              bind:target={targets[0]}
-              history={game.history.you.map((a) => a[0])}
-              stats={game.stats}
-              you={"you"}
-            />
-          </div>
-          <div class="text-center w-1/2 p-3">
-            <span>Right Hand</span>
-            <GestureButtons
-              bind:gesture={gestures[1]}
-              bind:spell={spells[1]}
-              bind:target={targets[1]}
-              history={game.history.you.map((a) => a[1])}
-              stats={game.stats}
-              you={"you"}
-            />
-          </div>
+<div>
+  <div class="container mx-auto text-center mt-12">
+    <h1 class="font-bold">Waving Hands</h1>
+    <div class="flex flex-col">
+      {#if user}
+        <div>Welcome back, {user.email.split("@")[0]}</div>
+        <a class="m-auto mb-5 underline hover:text-blue-500" href="/" on:click={logout}>Logout</a>
+        <div class="flex flex-row">
+          <Challenges user={user.email.split("@")[0]} />
+          <!-- <div class="w-5" /> -->
+          <div class="w-1/2">Active Games</div>
         </div>
-        <button class="mt-2 mx-auto rounded" on:click={submitMoves}>Submit Moves</button>
-      </div>
-      <div class="game-spells px-2">
-        <SpellList history={game.history.you} selected={gestures} />
-      </div>
+      {:else}
+        Sign in/Sign up
+        <input bind:value={username} class="m-auto mb-2" type="text" placeholder="name" />
+        <input bind:value={password} class="m-auto mb-2" type="password" placeholder="password" />
+        <button on:click={login} class="m-auto">Enter</button>
+        <a class="m-auto underline hover:text-blue-500" href="/register">Register</a>
+        {#if error}
+          <span class="text-red-500">{error}</span>
+        {/if}
+      {/if}
     </div>
-  </div>
-  <div class="history-section">
-    <GameChat chat={game.chat} />
   </div>
 </div>
-
-<style>
-  .history-section {
-    width: 500px;
-    border-left: 1px solid lightgrey;
-  }
-
-  .game-selection {
-    display: flex;
-    margin-top: auto;
-    height: 350px;
-    border-top: 1px solid lightgrey;
-  }
-
-  .game-moves {
-    width: 50%;
-  }
-
-  .game-spells {
-    width: 50%;
-    border-left: 1px solid lightgrey;
-  }
-</style>
